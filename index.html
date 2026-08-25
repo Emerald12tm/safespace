@@ -4,23 +4,68 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeSpace — Home</title>
+  <meta name="description" content="SafeSpace is a calm check-in space to pause, breathe, journal, and reset — a few quiet minutes shaped around how you're feeling.">
+
+  <!-- Open Graph / Twitter Card: controls the title, description, and
+       image shown when this page is shared as a link (iMessage, Slack,
+       Discord, X, etc.). og:image points at a generated preview image
+       (images/og-image.png) rather than a screenshot. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SafeSpace">
+  <meta property="og:title" content="SafeSpace — Take some time to rest">
+  <meta property="og:description" content="A calm check-in space to pause, breathe, journal, and reset — a few quiet minutes shaped around how you're feeling.">
+  <meta property="og:image" content="images/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SafeSpace — Take some time to rest">
+  <meta name="twitter:description" content="A calm check-in space to pause, breathe, journal, and reset.">
+  <meta name="twitter:image" content="images/og-image.png">
+
+  <!-- Favicon: SVG for modern browsers, PNG fallbacks for older ones
+       and for the iOS home-screen icon (apple-touch-icon). -->
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Custom Cursor Element -->
+  <!-- This tiny script must stay inline (not moved into script.js) and
+       must stay first in <body>: it runs synchronously before the
+       browser paints anything, so a returning visitor in light mode
+       never sees a flash of the default dark theme while script.js
+       (which is `defer`red, and so runs later) catches up. -->
+  <script>
+    (function() {
+      try {
+        if (localStorage.getItem('safespace_theme') === 'light') {
+          document.body.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Custom Cursor Element (see script.js section 1 + style.css) -->
   <div class="custom-cursor"></div>
 
-  <!-- Navigation Bar -->
+  <!-- Navigation Bar: shared markup/structure repeated on every page.
+       #navToggleBtn is the mobile hamburger (hidden on desktop, see
+       style.css); the three <span>s are its animated bars. -->
   <header class="navbar">
-    <div class="logo">
+    <a href="index.html" class="logo" aria-label="SafeSpace home">
       <span class="logo-icon"></span>
       <span class="logo-text">SafeSpace</span>
-    </div>
+    </a>
+    <button id="navToggleBtn" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <nav class="nav-links">
       <a href="index.html" class="nav-item active">Home</a>
       <a href="check-in.html" class="nav-item">Check-in</a>
       <a href="activities.html" class="nav-item">Activities</a>
+      <a href="account.html" class="nav-item">Account</a>
       <button id="themeToggleBtn" class="nav-btn" aria-label="Toggle theme">Light Mode</button>
     </nav>
   </header>
@@ -42,9 +87,19 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <p>SAFESPACE</p>
+    <nav class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="check-in.html">Check-in</a>
+      <a href="activities.html">Activities</a>
+      <a href="account.html">Account</a>
+    </nav>
+    <p class="footer-copy">&copy; <span id="footerYear">2026</span> SAFESPACE</p>
+    <p class="footer-credit">Made by Shaurya Gupta</p>
   </footer>
 
-  <script src="script.js"></script>
+  <!-- `defer` lets the browser paint the page immediately instead of
+       blocking on this download; it still runs (in order, before
+       DOMContentLoaded) once parsing finishes. -->
+  <script src="script.js" defer></script>
 </body>
 </html>

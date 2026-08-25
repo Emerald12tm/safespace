@@ -1,29 +1,43 @@
 /* ==========================================================
    SafeSpace — design tokens
-   Light: 60% #f6f3f3 · 30% #7d3a36 · 10% #cc335d
-   Dark:  60% #00003d · 30% #000080 · 10% #4d4dff
+   A softer, low-saturation blue/indigo palette (chosen for a
+   calmer, easier-on-the-eyes feel than the original saturated
+   navy + hot pink/maroon scheme).
+   Light: 60% #f7f8fc · 30% #e4e9f5 · 10% #4a67c4
+   Dark:  60% #10162b · 30% #1e2a45 · 10% #6e8ee8
+
+   Every color in this file is one of the CSS variables below (never a
+   hardcoded hex, aside from a few one-off overlays like button shadows).
+   That's what lets the whole site swap between dark/light instantly —
+   see script.js section 2 for how `.light-theme` gets toggled.
    ========================================================== */
 
 :root {
   /* Default Dark Mode */
-  --bg-color: #00003d;      /* 60% Dominant */
-  --surface-color: #000080; /* 30% Secondary */
-  --accent-color: #4d4dff;  /* 10% Accent */
-  --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.65);
-  --nav-inactive: rgba(255, 255, 255, 0.4);
+  --bg-color: #10162b;      /* 60% Dominant */
+  --surface-color: #1e2a45; /* 30% Secondary */
+  --accent-color: #6e8ee8;  /* 10% Accent */
+  --text-main: #f1f4fa;
+  --text-muted: rgba(241, 244, 250, 0.64);
+  --nav-inactive: rgba(241, 244, 250, 0.4);
+  --success-color: #8fe3ab;
+  --error-color: #ffb3b3;
 }
 
 body.light-theme {
-  /* Light Mode */
-  --bg-color: #f6f3f3;      /* 60% Dominant */
-  --surface-color: #7d3a36; /* 30% Secondary */
-  --accent-color: #cc335d;  /* 10% Accent */
-  --text-main: #1a1a1a;
-  --text-muted: #000000;
-  --nav-inactive: #7d3a36;
+  /* Light Mode — overrides the same variable names above */
+  --bg-color: #f7f8fc;      /* 60% Dominant */
+  --surface-color: #e4e9f5; /* 30% Secondary */
+  --accent-color: #4a67c4;  /* 10% Accent */
+  --text-main: #1e2333;
+  --text-muted: rgba(30, 35, 51, 0.64);
+  --nav-inactive: #6b7a99;
+  --success-color: #1f8a4c;
+  --error-color: #c62f2f;
 }
 
+/* Global reset: strip default browser margins/padding and use the
+   border-box model everywhere, so `width` + `padding` never surprise us. */
 * {
   margin: 0;
   padding: 0;
@@ -31,15 +45,34 @@ body.light-theme {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Some elements set their own `display` (flex/grid) via a class, which as
+   author CSS otherwise overrides the browser's default `[hidden]` rule. */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  /* Belt-and-suspenders against any child element accidentally causing a
+     horizontal scrollbar (nothing on the page should intentionally need
+     one). */
+  overflow-x: hidden;
+  width: 100%;
+}
+
 body {
   background-color: var(--bg-color);
   color: var(--text-main);
   min-height: 100vh;
+  width: 100%;
+  /* Every page is one big vertical flex column: navbar at top, footer at
+     bottom, main content pushed to fill the space between via
+     `justify-content: space-between`. */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   padding: 20px 40px;
+  overflow-x: hidden;
   transition: background-color 0.3s ease, color 0.3s ease;
   cursor: none; /* Hides standard OS cursor */
 }
@@ -48,7 +81,24 @@ a, button {
   cursor: none; /* Keeps custom cursor active on interactive elements */
 }
 
-/* Custom Cursor Styling */
+/* Touch devices have no mouse to drive the custom cursor, so it would
+   otherwise sit frozen in the top-left corner. Fall back to the native
+   pointer there. */
+@media (hover: none) {
+  body,
+  a,
+  button {
+    cursor: auto;
+  }
+
+  .custom-cursor {
+    display: none;
+  }
+}
+
+/* Custom Cursor Styling — this div is repositioned to follow the real
+   mouse in script.js section 1 (a `mousemove` listener updates its
+   `left`/`top`), which is why the OS cursor is hidden above. */
 .custom-cursor {
   width: 28px;
   height: 28px;
@@ -64,11 +114,16 @@ a, button {
   transition: transform 0.08s ease-out, background-color 0.3s ease, border-color 0.3s ease;
 }
 
+/* ==========================================================
+   Navbar
+   ========================================================== */
+
 .navbar {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative; /* anchors the mobile dropdown nav-links below */
 }
 
 .logo {
@@ -78,6 +133,14 @@ a, button {
   font-size: 1.25rem;
   font-weight: 500;
   margin-right: auto;
+  text-decoration: none;
+  color: var(--text-main);
+  border-radius: 12px;
+  transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+  opacity: 0.85;
 }
 
 .logo-icon {
@@ -130,6 +193,52 @@ a, button {
   opacity: 0.9;
 }
 
+/* Mobile Nav Toggle (hamburger) — hidden by default, shown only under
+   the 700px breakpoint near the bottom of this file. The three <span>
+   bars animate into an "X" via the `.open` class (toggled in script.js
+   section 1c). */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background-color: var(--text-main);
+  border-radius: 2px;
+  transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.nav-toggle.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-toggle.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav-toggle.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ==========================================================
+   Shared Hero/Page Layout
+   Every page's <main> uses .hero-container (or a page-specific
+   variant that extends it, like .check-in-container) to center its
+   content in a single narrow column.
+   ========================================================== */
+
 .hero-container {
   display: flex;
   flex-direction: column;
@@ -139,6 +248,7 @@ a, button {
   margin: auto 0;
 }
 
+/* The pulsing accent circle on the homepage. */
 .circle-graphic {
   width: 160px;
   height: 160px;
@@ -173,6 +283,10 @@ a, button {
   margin-bottom: 32px;
 }
 
+/* ==========================================================
+   Buttons
+   ========================================================== */
+
 .primary-btn {
   background-color: var(--accent-color);
   color: #ffffff;
@@ -182,6 +296,14 @@ a, button {
   border: none;
   border-radius: 28px;
   transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.3s ease;
+}
+
+/* .primary-btn is normally a <button>, but a few places (like the 404
+   page's "Back to Home") reuse it on an <a> instead — anchors default
+   to `display: inline` and no underline-removal, so this fixes both. */
+a.primary-btn {
+  display: inline-block;
+  text-decoration: none;
 }
 
 .secondary-btn {
@@ -207,12 +329,49 @@ a, button {
   transform: translateY(-1px);
 }
 
+/* ==========================================================
+   Footer
+   ========================================================== */
+
 .footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--text-main);
+}
+
+/* "© <year> SAFESPACE" - the year itself is filled in by script.js
+   section 1b so it never goes stale. */
+.footer-copy {
   font-size: 0.75rem;
   letter-spacing: 2px;
   color: var(--text-muted);
   font-weight: 700;
-  margin-top: 20px;
+}
+
+.footer-credit {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 /* ==========================================================
@@ -257,6 +416,7 @@ a, button {
   border-color: var(--accent-color);
 }
 
+/* Applied by script.js section 4 when a card is clicked. */
 .emotion-card.selected {
   border-color: var(--accent-color);
   background-color: rgba(255, 255, 255, 0.08);
@@ -282,6 +442,8 @@ a, button {
   transform: scale(1.1);
 }
 
+/* The check-in "Continue" button starts disabled until a mood is
+   picked (see script.js section 4). */
 .primary-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -338,6 +500,8 @@ a, button {
   transition: border-color 0.3s ease, transform 0.3s ease;
 }
 
+/* Highlights the activity card recommended for the mood picked during
+   check-in (see script.js section 5). */
 .activity-card.recommended {
   border-color: var(--accent-color);
   box-shadow: 0 0 24px rgba(77, 77, 255, 0.2);
@@ -354,7 +518,8 @@ a, button {
   max-width: 480px;
 }
 
-/* Box Breathing Widget */
+/* Box Breathing Widget — the circle's grow/shrink animation comes from
+   the `.inhale` / `.exhale` classes toggled in script.js section 6. */
 .breathing-widget {
   display: flex;
   flex-direction: column;
@@ -396,7 +561,11 @@ a, button {
   min-height: 28px;
 }
 
-/* Journaling Section */
+/* Journaling Section — NOTE: this styled an older free-text auto-save
+   textarea (#journalInput) that has since been replaced by the
+   Supabase-backed Reflective Journal form (.demo-entry-form below).
+   No HTML on the site currently uses these two rules; left in place
+   in case that simpler local-only journaling mode comes back. */
 #journalInput {
   width: 100%;
   min-height: 140px;
@@ -433,6 +602,8 @@ a, button {
   line-height: 1.5;
 }
 
+/* Reflective Journal form (activities.html) — also reused for the
+   login/signup form on account.html and the password-reset form. */
 .demo-entry-form {
   width: 100%;
   max-width: 540px;
@@ -471,20 +642,41 @@ a, button {
   resize: vertical;
 }
 
+/* Shared status-message line under forms (journal save, login/signup,
+   password reset). Plain/muted by default; script.js's `setStatus()`
+   helper adds .status-success or .status-error as needed. */
 .demo-status {
   min-height: 20px;
   font-size: 0.8rem;
   color: var(--text-muted);
 }
 
-/* Spotify Container */
+.demo-status.status-success {
+  color: var(--success-color);
+}
+
+.demo-status.status-error {
+  color: var(--error-color);
+}
+
+/* Spotify Container — sized to match the embed's fixed 352px height so
+   nothing jumps when the skeleton (below) is swapped out for the
+   real iframe. */
 .spotify-container {
+  position: relative;
   width: 100%;
   max-width: 540px;
+  min-height: 352px;
+}
+
+.spotify-container iframe {
+  position: relative;
+  z-index: 1;
 }
 
 /* p5.js Game Container */
 .game-container {
+  position: relative;
   width: 100%;
   min-height: 300px;
   background-color: var(--bg-color);
@@ -495,7 +687,8 @@ a, button {
   overflow: hidden;
 }
 
-/* Responsive p5 Canvas Styling */
+/* Responsive p5 Canvas Styling — the canvas itself is a fixed 1000x1000
+   pixels (see script.js section 9), scaled down to fit its container. */
 .game-container canvas {
   width: 100% !important;
   height: auto !important;
@@ -503,6 +696,60 @@ a, button {
   border-radius: 12px;
   display: block;
 }
+
+/* Skeleton loaders (Spotify + game canvas) — a soft pulse rather than a
+   sweeping shimmer, to stay consistent with a calm, low-stimulation feel.
+   Removed from the DOM by script.js once the real content is ready. */
+.skeleton {
+  border-radius: 16px;
+  background-color: var(--surface-color);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  animation: skeleton-pulse 2.2s ease-in-out infinite;
+}
+
+.skeleton-spotify {
+  position: absolute;
+  inset: 0;
+  z-index: 2; /* sits above the iframe underneath it */
+}
+
+.skeleton-game {
+  position: absolute;
+  inset: 0;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: -150% 0;
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 150% 0;
+    opacity: 0.7;
+  }
+}
+
+/* Respect users who've asked their OS for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    opacity: 0.85;
+  }
+}
+
+/* ==========================================================
+   Journal History Page
+   ========================================================== */
 
 .journal-history-page {
   width: 100%;
@@ -525,6 +772,12 @@ a, button {
 .journal-history-list {
   display: grid;
   gap: 22px;
+}
+
+.empty-state {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .journal-history-item {
@@ -580,4 +833,129 @@ a, button {
   margin-top: 24px;
   width: 100%;
   max-width: 320px;
+}
+
+/* ==========================================================
+   Account & Auth Gate Styles
+   Shared by account.html (login/signup), the Reflective Journal card's
+   login prompt, and the journal history page's login prompt. An
+   "auth gate" is just a short message + a link to account.html shown
+   in place of content that requires being logged in.
+   ========================================================== */
+
+.account-container {
+  max-width: 480px;
+}
+
+.account-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.account-form {
+  width: 100%;
+}
+
+.account-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.auth-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ==========================================================
+   404 Page Styles
+   ========================================================== */
+
+.error-container {
+  max-width: 480px;
+}
+
+.error-code {
+  font-size: 5rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+/* ==========================================================
+   Mobile Optimization
+   ========================================================== */
+
+@media (max-width: 700px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  /* Collapses the inline nav-links into a dropdown card anchored under
+     the navbar; `.open` (toggled in script.js section 1c) expands it. */
+  .nav-links {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    background-color: var(--surface-color);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+    z-index: 20;
+  }
+
+  .nav-links.open {
+    max-height: 320px;
+    opacity: 1;
+    padding: 16px;
+    pointer-events: auto;
+  }
+
+  .nav-item,
+  .nav-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 16px 20px;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-description {
+    font-size: 0.9rem;
+  }
+
+  .activity-card {
+    padding: 24px 18px;
+  }
+
+  .journal-history-panel {
+    padding: 20px;
+  }
+
+  .error-code {
+    font-size: 3.5rem;
+  }
 }

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeSpace — Account</title>
+  <meta name="description" content="Log in or create a SafeSpace account to keep a private journal only you can see.">
+
+  <!-- Open Graph / Twitter Card (link previews) — see index.html for
+       a fuller explanation of this block. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SafeSpace">
+  <meta property="og:title" content="SafeSpace — Account">
+  <meta property="og:description" content="Log in or create a SafeSpace account to keep a private journal only you can see.">
+  <meta property="og:image" content="images/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SafeSpace — Account">
+  <meta name="twitter:description" content="Log in or create a SafeSpace account to keep a private journal.">
+  <meta name="twitter:image" content="images/og-image.png">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+</head>
+<body>
+
+  <script>
+    // Applies the saved theme before first paint, avoiding a flash of the
+    // default (dark) theme on every page navigation.
+    (function() {
+      try {
+        if (localStorage.getItem('safespace_theme') === 'light') {
+          document.body.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Custom Cursor Element -->
+  <div class="custom-cursor"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="index.html" class="logo" aria-label="SafeSpace home">
+      <span class="logo-icon"></span>
+      <span class="logo-text">SafeSpace</span>
+    </a>
+    <button id="navToggleBtn" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-item">Home</a>
+      <a href="check-in.html" class="nav-item">Check-in</a>
+      <a href="activities.html" class="nav-item">Activities</a>
+      <a href="account.html" class="nav-item active">Account</a>
+      <button id="themeToggleBtn" class="nav-btn" aria-label="Toggle theme">Light Mode</button>
+    </nav>
+  </header>
+
+  <!-- Account Content — only one of these two panels is ever visible.
+       script.js's updateAccountUI() shows/hides them via the
+       `data-requires-guest` / `data-requires-auth` attributes, the same
+       pattern used for the login gates on activities.html and
+       journal-history.html. Both start with a sensible default in the
+       raw HTML (guest panel showing, auth panel `hidden`) so there's no
+       flicker while script.js figures out whether a session exists. -->
+  <main class="hero-container account-container">
+
+    <!-- Logged out: one form does double duty for both Log In and Sign
+         Up — #authModeToggle (script.js section 11) just flips a mode
+         flag and relabels the button/toggle text; the submit handler
+         calls Supabase's signInWithPassword() or signUp() accordingly. -->
+    <div class="account-panel" data-requires-guest>
+      <h1 class="hero-title">Your private journal</h1>
+      <p class="hero-description">Log in or create an account to save journal entries only you can see.</p>
+
+      <form id="authForm" class="demo-entry-form account-form">
+        <label>
+          Email
+          <input type="email" id="authEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
+        </label>
+
+        <label>
+          Password
+          <input type="password" id="authPassword" name="password" placeholder="At least 6 characters" minlength="6" autocomplete="current-password" required>
+        </label>
+
+        <button type="submit" id="authSubmitBtn" class="primary-btn">Log In</button>
+        <button type="button" id="authModeToggle" class="skip-btn">Need an account? Sign up</button>
+        <!-- Emails a reset link that lands on reset-password.html
+             (script.js section 11's forgotPasswordBtn handler). -->
+        <button type="button" id="forgotPasswordBtn" class="skip-btn">Forgot password?</button>
+        <p id="authStatus" class="demo-status"></p>
+      </form>
+    </div>
+
+    <!-- Logged in: account panel -->
+    <div class="account-panel" data-requires-auth hidden>
+      <h1 class="hero-title">You're logged in</h1>
+      <p class="hero-description">Signed in as <strong data-account-email></strong></p>
+
+      <div class="account-actions">
+        <a href="activities.html" class="primary-btn">Go to Activities</a>
+        <a href="journal-history.html" class="primary-btn secondary-btn">View Journal History</a>
+        <button type="button" class="skip-btn sign-out-btn">Log out</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <nav class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="check-in.html">Check-in</a>
+      <a href="activities.html">Activities</a>
+      <a href="account.html">Account</a>
+    </nav>
+    <p class="footer-copy">&copy; <span id="footerYear">2026</span> SAFESPACE</p>
+    <p class="footer-credit">Made by Shaurya Gupta</p>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

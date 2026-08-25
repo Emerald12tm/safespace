@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeSpace — Page Not Found</title>
+  <meta name="description" content="This page doesn't exist. Head back to SafeSpace to check in or explore activities.">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <script>
+    // Applies the saved theme before first paint, avoiding a flash of the
+    // default (dark) theme on every page navigation.
+    (function() {
+      try {
+        if (localStorage.getItem('safespace_theme') === 'light') {
+          document.body.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Custom Cursor Element -->
+  <div class="custom-cursor"></div>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="index.html" class="logo" aria-label="SafeSpace home">
+      <span class="logo-icon"></span>
+      <span class="logo-text">SafeSpace</span>
+    </a>
+    <button id="navToggleBtn" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    <nav class="nav-links">
+      <a href="index.html" class="nav-item">Home</a>
+      <a href="check-in.html" class="nav-item">Check-in</a>
+      <a href="activities.html" class="nav-item">Activities</a>
+      <a href="account.html" class="nav-item">Account</a>
+      <button id="themeToggleBtn" class="nav-btn" aria-label="Toggle theme">Light Mode</button>
+    </nav>
+  </header>
+
+  <!-- 404 Content — most static hosts (GitHub Pages, Netlify, etc.)
+       automatically serve this file for any unmatched URL as long as
+       it's named exactly `404.html` at the site root; nothing extra
+       needs to be configured for that to work. -->
+  <main class="hero-container error-container">
+    <p class="error-code">404</p>
+    <h1 class="hero-title">This page took a moment to itself</h1>
+    <p class="hero-description">
+      We couldn't find the page you were looking for. It may have moved, or the link might be off.
+    </p>
+    <a href="index.html" class="primary-btn">Back to Home</a>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <nav class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="check-in.html">Check-in</a>
+      <a href="activities.html">Activities</a>
+      <a href="account.html">Account</a>
+    </nav>
+    <p class="footer-copy">&copy; <span id="footerYear">2026</span> SAFESPACE</p>
+    <p class="footer-credit">Made by Shaurya Gupta</p>
+  </footer>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

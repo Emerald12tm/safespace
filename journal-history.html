@@ -4,24 +4,59 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeSpace — Journal History</title>
+  <meta name="description" content="Look back on your saved SafeSpace journal entries.">
+
+  <!-- Open Graph / Twitter Card (link previews) — see index.html for
+       a fuller explanation of this block. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="SafeSpace">
+  <meta property="og:title" content="SafeSpace — Journal History">
+  <meta property="og:description" content="Look back on your saved SafeSpace journal entries.">
+  <meta property="og:image" content="images/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SafeSpace — Journal History">
+  <meta name="twitter:description" content="Look back on your saved SafeSpace journal entries.">
+  <meta name="twitter:image" content="images/og-image.png">
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
+  <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
 </head>
 <body>
+
+  <script>
+    // Applies the saved theme before first paint, avoiding a flash of the
+    // default (dark) theme on every page navigation.
+    (function() {
+      try {
+        if (localStorage.getItem('safespace_theme') === 'light') {
+          document.body.classList.add('light-theme');
+        }
+      } catch (e) {}
+    })();
+  </script>
 
   <!-- Custom Cursor Element -->
   <div class="custom-cursor"></div>
 
   <!-- Navigation Bar -->
   <header class="navbar">
-    <div class="logo">
+    <a href="index.html" class="logo" aria-label="SafeSpace home">
       <span class="logo-icon"></span>
       <span class="logo-text">SafeSpace</span>
-    </div>
+    </a>
+    <button id="navToggleBtn" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <nav class="nav-links">
       <a href="index.html" class="nav-item">Home</a>
       <a href="check-in.html" class="nav-item">Check-in</a>
       <a href="activities.html" class="nav-item">Activities</a>
+      <a href="account.html" class="nav-item">Account</a>
       <button id="themeToggleBtn" class="nav-btn" aria-label="Toggle theme">Light Mode</button>
     </nav>
   </header>
@@ -32,19 +67,40 @@
       <p class="hero-description">Look back on your experiences.</p>
     </div>
 
+    <!-- Same login-gate pattern as the Reflective Journal card on
+         activities.html: script.js's updateAccountUI() shows exactly
+         one of these two blocks depending on whether you're logged in,
+         and only fetches/renders entries (script.js section 10:
+         loadJournalHistory / renderJournalEntries) once it knows you are. -->
     <section class="journal-history-panel">
-      <p id="journalHistoryStatus" class="demo-status">Loading journal history...</p>
-      <div id="journalHistoryList" class="journal-history-list"></div>
-      <p id="journalHistoryEmpty" class="empty-state">No journal entries were found. Save one from the journal page to view it here.</p>
+      <div class="auth-gate" data-requires-guest>
+        <p class="activity-desc">Log in to view your private journal entries.</p>
+        <a href="account.html" class="primary-btn">Log In / Sign Up</a>
+      </div>
+
+      <div data-requires-auth hidden>
+        <p class="demo-status">Signed in as <strong data-account-email></strong> · <button type="button" class="skip-btn sign-out-btn">Log out</button></p>
+        <p id="journalHistoryStatus" class="demo-status">Loading journal history...</p>
+        <!-- Populated by renderJournalEntries() in script.js -->
+        <div id="journalHistoryList" class="journal-history-list"></div>
+        <p id="journalHistoryEmpty" class="empty-state">No journal entries were found. Save one from the journal page to view it here.</p>
+      </div>
     </section>
 
     <button id="returnActivitiesBtn" class="primary-btn">Back to Activities</button>
   </main>
 
   <footer class="footer">
-    <p>SAFESPACE</p>
+    <nav class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="check-in.html">Check-in</a>
+      <a href="activities.html">Activities</a>
+      <a href="account.html">Account</a>
+    </nav>
+    <p class="footer-copy">&copy; <span id="footerYear">2026</span> SAFESPACE</p>
+    <p class="footer-credit">Made by Shaurya Gupta</p>
   </footer>
 
-  <script src="script.js"></script>
+  <script src="script.js" defer></script>
 </body>
 </html>
