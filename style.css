@@ -515,11 +515,9 @@ a.primary-btn {
   align-self: flex-start;
   background-color: var(--accent-color);
   color: #ffffff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 4px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 4px 14px;
   border-radius: 12px;
 }
 

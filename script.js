@@ -275,11 +275,14 @@ document.addEventListener('DOMContentLoaded', function() {
         breathInstruction.textContent = `${currentPhase.action}... (${timeLeft}s)`;
         breathingCircle.className = 'breathing-circle-inner ' + currentPhase.class;
 
-        if (timeLeft > 0) {
-          timeLeft--;
-        } else {
+        // Counts down 4, 3, 2, 1 (four ticks = four real seconds) before
+        // advancing. The previous version also displayed "0s" as a fifth
+        // tick before resetting, which made every phase run 5 seconds
+        // instead of the advertised 4.
+        timeLeft--;
+        if (timeLeft <= 0) {
           timeLeft = 4;
-          step = (step + 1) % 4; // Advance phase on reaching 0
+          step = (step + 1) % 4; // Advance phase now that 4 seconds have shown
         }
       }
 
@@ -1172,11 +1175,18 @@ if (document.getElementById('p5-canvas-container')) {
 
       // Rock Movement — only advances while the right arrow is held,
       // the game isn't already won, and the rock isn't mid-slip.
-      // More helpers (`people`) push faster.
+      // More helpers (`people`) push faster. The X/Y multipliers are
+      // in a fixed 0.64 ratio to match the cliff's actual slope (see
+      // the "Dark Cliff" vertices below: rise/run from the start point
+      // (250, ~830) to the finish (1000, 350) is -480/750 = -0.64) — a
+      // steeper ratio here made the rock (and its trailing helpers)
+      // visibly float above the mountain surface by the time it
+      // reached the higher stages, since it was rising faster than the
+      // slope actually drops.
       if (pushing && !won && !fallingRockActive) {
         let groupSpeed = speed + (people - 1) * 2.5;
-        rockX += groupSpeed * 0.12;
-        rockY -= groupSpeed * 0.09;
+        rockX += groupSpeed * 0.19;
+        rockY -= groupSpeed * 0.122;
       }
 
       // Progress Points — with fewer than 5 people, the boulder can
@@ -1201,7 +1211,7 @@ if (document.getElementById('p5-canvas-container')) {
         resets++;
         canAddPerson = false;
         showTryAgain = true;
-        tryAgainTimer = 120;
+        tryAgainTimer = 60;
       }
 
       // Falling Rock Physics — simple gravity + friction while the
@@ -1217,7 +1227,7 @@ if (document.getElementById('p5-canvas-container')) {
           rockX = startX;
           rockY = startY;
           canAddPerson = true; // now the player can press space to recruit another helper
-          tryAgainTimer = 70;
+          tryAgainTimer = 40;
         }
       }
 
@@ -1415,6 +1425,14 @@ if (document.getElementById('p5-canvas-container')) {
         resets = 0;
         showTryAgain = false;
         fallingRockActive = false;
+      }
+
+      // Without this, the browser's own default key behavior also
+      // fires alongside the game's: space scrolls the page down a
+      // screen and arrow keys can scroll too, which yanks the viewport
+      // out from under the canvas on every single press.
+      if (p.keyCode == p.RIGHT_ARROW || p.key == " " || p.keyCode == p.ENTER) {
+        return false;
       }
     };
 
