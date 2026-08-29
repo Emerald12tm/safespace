@@ -192,10 +192,10 @@ document.addEventListener('DOMContentLoaded', function() {
   // ==========================================================
   // 5. Activities Page Dynamic Tailoring
   // ==========================================================
-  // Reads whatever mood was saved during check-in (if any) and swaps
-  // the activities.html heading/subtext, plus highlights one
-  // recommended card by adding the `.recommended` class (see the
-  // glowing border style in style.css).
+  // Reads whatever mood was saved during check-in (if any), names the
+  // recommended activity right in the banner text, and adds the
+  // `.recommended` class to that one card — which both glows (see
+  // style.css) and reveals its "Recommended for you" badge.
   const moodGreeting = document.getElementById('moodGreeting');
   const moodSubtext = document.getElementById('moodSubtext');
   const currentMood = localStorage.getItem('safespace_selected_mood');
@@ -203,10 +203,10 @@ document.addEventListener('DOMContentLoaded', function() {
   if (moodGreeting) {
     if (currentMood) {
       const moodMap = {
-        bright: { title: "Feeling Bright", text: "Let's channel that positive energy with music, expression, and joy.", recommend: "music-section" },
-        steady: { title: "Feeling Steady", text: "A balanced space to reflect, write, and stay grounded.", recommend: "demo-supabase-section" },
-        heavy: { title: "Feeling Heavy", text: "Take things slow. Soft soundscapes and breathing are here for you.", recommend: "breathing-section" },
-        overloaded: { title: "Feeling Overloaded", text: "Let's pause together. Unwind with box breathing or a focus game.", recommend: "breathing-section" }
+        bright: { title: "Feeling Bright", text: "Let's channel that positive energy — Calming Sounds is recommended for you below.", recommend: "music-section" },
+        steady: { title: "Feeling Steady", text: "A balanced space to reflect and stay grounded — Reflective Journal is recommended for you below.", recommend: "demo-supabase-section" },
+        heavy: { title: "Feeling Heavy", text: "Take things slow — Box Breathing is recommended for you below.", recommend: "breathing-section" },
+        overloaded: { title: "Feeling Overloaded", text: "Let's pause together — Mindful Movement is recommended for you below.", recommend: "movement-section" }
       };
 
       const config = moodMap[currentMood];
@@ -215,7 +215,14 @@ document.addEventListener('DOMContentLoaded', function() {
         moodSubtext.textContent = config.text;
 
         const recCard = document.getElementById(config.recommend);
-        if (recCard) recCard.classList.add('recommended');
+        if (recCard) {
+          recCard.classList.add('recommended');
+          // Move the recommended card to the front of the grid so it's
+          // the first thing you see, not just a highlighted card
+          // somewhere further down the page.
+          const grid = recCard.parentElement;
+          if (grid) grid.insertBefore(recCard, grid.firstElementChild);
+        }
       }
     } else {
       // No mood saved (e.g. came straight to Activities, or hit "Skip").
@@ -278,6 +285,165 @@ document.addEventListener('DOMContentLoaded', function() {
 
       timer(); // Run immediately on click
       breathingInterval = setInterval(timer, 1000);
+    });
+  }
+
+  // ==========================================================
+  // 7. Mindful Movement
+  // ==========================================================
+  // A short pool of gentle stretch/movement prompts. "Start Movement"
+  // picks one at random (never repeating the last one shown) and counts
+  // down its suggested duration, similar to the breathing timer above.
+  // Clicking again while it's running stops and resets it, same as the
+  // breathing button.
+  // Each movement's `icon` is a small inline stick-figure SVG illustrating
+  // the pose. They use stroke="currentColor"/fill="currentColor" so they
+  // automatically pick up the site's accent color in both themes (see
+  // .movement-icon in style.css).
+  const svgOpen = '<svg viewBox="0 0 100 112" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">';
+  const movements = [
+    {
+      text: 'Roll your shoulders backward, slow and easy.',
+      seconds: 15,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/><line x1="50" y1="29" x2="50" y2="64"/>' +
+        '<line x1="50" y1="34" x2="36" y2="52"/><line x1="50" y1="34" x2="64" y2="52"/>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<path d="M32,30 Q22,22 30,14"/><polygon points="26,13 30,14 28,19" stroke="none" fill="currentColor"/>' +
+        '<path d="M68,30 Q78,22 70,14"/><polygon points="74,13 70,14 72,19" stroke="none" fill="currentColor"/></svg>'
+    },
+    {
+      text: 'Gently drop one ear toward your shoulder, then the other.',
+      seconds: 15,
+      icon: svgOpen +
+        '<line x1="50" y1="29" x2="50" y2="64"/><line x1="50" y1="34" x2="38" y2="56"/>' +
+        '<line x1="50" y1="34" x2="62" y2="56"/><line x1="50" y1="64" x2="40" y2="98"/>' +
+        '<line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<g transform="rotate(24 50 29)"><circle cx="50" cy="20" r="9"/></g></svg>'
+    },
+    {
+      text: 'Reach both arms overhead and stretch up tall.',
+      seconds: 10,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/><line x1="50" y1="29" x2="50" y2="64"/>' +
+        '<line x1="50" y1="32" x2="34" y2="8"/><line x1="50" y1="32" x2="66" y2="8"/>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<polyline points="30,14 34,8 39,13"/><polyline points="61,13 66,8 70,14"/></svg>'
+    },
+    {
+      text: 'Slowly twist your torso side to side.',
+      seconds: 15,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/>' +
+        '<g transform="rotate(15 50 46)"><line x1="34" y1="42" x2="66" y2="42"/>' +
+        '<line x1="34" y1="42" x2="22" y2="56"/><line x1="66" y1="42" x2="78" y2="56"/></g>' +
+        '<line x1="50" y1="29" x2="50" y2="64"/><line x1="50" y1="64" x2="40" y2="98"/>' +
+        '<line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<text x="50" y="10" font-size="15" text-anchor="middle" stroke="none" fill="currentColor">&#8644;</text></svg>'
+    },
+    {
+      text: 'Shake out your hands and wrists.',
+      seconds: 10,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/><line x1="50" y1="29" x2="50" y2="64"/>' +
+        '<line x1="50" y1="34" x2="36" y2="58"/><line x1="50" y1="34" x2="64" y2="58"/>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<circle cx="36" cy="58" r="3" stroke="none" fill="currentColor"/>' +
+        '<circle cx="64" cy="58" r="3" stroke="none" fill="currentColor"/>' +
+        '<path d="M26,52 q-4,3 0,6 q-4,3 0,6"/><path d="M74,52 q4,3 0,6 q4,3 0,6"/></svg>'
+    },
+    {
+      text: 'Roll your ankles in slow circles, one foot at a time.',
+      seconds: 15,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/><line x1="50" y1="29" x2="50" y2="64"/>' +
+        '<line x1="50" y1="34" x2="38" y2="58"/><line x1="50" y1="34" x2="62" y2="58"/>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<circle cx="60" cy="98" r="9" stroke-dasharray="4,3"/>' +
+        '<polygon points="69,98 63,93 63,101" stroke="none" fill="currentColor"/></svg>'
+    },
+    {
+      text: 'Breathe in and reach up, then exhale as you relax your arms down.',
+      seconds: 10,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/><line x1="50" y1="29" x2="50" y2="64"/>' +
+        '<line x1="50" y1="32" x2="34" y2="8"/><line x1="50" y1="34" x2="64" y2="56"/>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<text x="82" y="36" font-size="17" text-anchor="middle" stroke="none" fill="currentColor">&#8597;</text></svg>'
+    },
+    {
+      text: 'Gently rock side to side, letting your arms swing loosely.',
+      seconds: 15,
+      icon: svgOpen +
+        '<g transform="rotate(14 50 64)"><circle cx="50" cy="20" r="9"/>' +
+        '<line x1="50" y1="29" x2="50" y2="64"/><line x1="50" y1="34" x2="34" y2="54"/>' +
+        '<line x1="50" y1="34" x2="66" y2="54"/></g>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/>' +
+        '<text x="50" y="10" font-size="15" text-anchor="middle" stroke="none" fill="currentColor">&#8644;</text></svg>'
+    },
+    {
+      text: 'Stretch one arm across your chest and hold, then switch sides.',
+      seconds: 15,
+      icon: svgOpen +
+        '<circle cx="50" cy="20" r="9"/><line x1="50" y1="29" x2="50" y2="64"/>' +
+        '<line x1="62" y1="34" x2="28" y2="46"/><line x1="38" y1="34" x2="46" y2="44"/>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/></svg>'
+    },
+    {
+      text: 'If you can, stand and gently fold forward, letting your head hang.',
+      seconds: 15,
+      icon: svgOpen +
+        '<g transform="rotate(75 50 64)"><circle cx="50" cy="20" r="9"/>' +
+        '<line x1="50" y1="29" x2="50" y2="64"/><line x1="50" y1="34" x2="38" y2="56"/>' +
+        '<line x1="50" y1="34" x2="62" y2="56"/></g>' +
+        '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/></svg>'
+    }
+  ];
+
+  const movementIcon = document.getElementById('movementIcon');
+  const movementText = document.getElementById('movementText');
+  const movementTimer = document.getElementById('movementTimer');
+  const startMovementBtn = document.getElementById('startMovementBtn');
+  let movementInterval = null;
+  let lastMovementIndex = -1;
+
+  if (startMovementBtn && movementText && movementTimer) {
+    startMovementBtn.addEventListener('click', function() {
+      // Clicking again while running stops and resets it.
+      if (movementInterval) {
+        clearInterval(movementInterval);
+        movementInterval = null;
+        if (movementIcon) movementIcon.innerHTML = '';
+        movementText.textContent = 'Press start for a short movement break';
+        movementTimer.textContent = 'Ready when you are';
+        startMovementBtn.textContent = 'Start Movement';
+        return;
+      }
+
+      let randomIndex;
+      do {
+        randomIndex = Math.floor(Math.random() * movements.length);
+      } while (randomIndex === lastMovementIndex);
+      lastMovementIndex = randomIndex;
+
+      const movement = movements[randomIndex];
+      let timeLeft = movement.seconds;
+      if (movementIcon) movementIcon.innerHTML = movement.icon;
+      movementText.textContent = movement.text;
+      movementTimer.textContent = `${timeLeft}s`;
+      startMovementBtn.textContent = 'Stop';
+
+      movementInterval = setInterval(function() {
+        timeLeft--;
+        if (timeLeft <= 0) {
+          clearInterval(movementInterval);
+          movementInterval = null;
+          movementTimer.textContent = 'Nice work!';
+          startMovementBtn.textContent = 'Start Movement';
+        } else {
+          movementTimer.textContent = `${timeLeft}s`;
+        }
+      }, 1000);
     });
   }
 
@@ -801,6 +967,11 @@ if (document.getElementById('p5-canvas-container')) {
     let fallingRockSpeedY = 0;
     let fallingRockActive = false;
 
+    // No hover capability generally means no physical keyboard either
+    // (phones/tablets) — used below to show touch-friendly instructions
+    // instead of "press SPACE" / "press ENTER".
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+
     p.setup = function() {
       const container = document.getElementById('p5-canvas-container');
       const canvas = p.createCanvas(1000, 1000);
@@ -1078,10 +1249,10 @@ if (document.getElementById('p5-canvas-container')) {
       p.textSize(20);
 
       if (people > 1) p.text("People helping: " + people, 30, 40);
-      p.text("Hold RIGHT ARROW to push", 30, 70);
+      p.text(isTouchDevice ? "Tap and hold to push" : "Hold RIGHT ARROW to push", 30, 70);
 
       if (canAddPerson && people < 5) {
-        p.text("Press SPACE to add a helper", 30, 100);
+        p.text(isTouchDevice ? "Tap to add a helper" : "Press SPACE to add a helper", 30, 100);
       }
 
       if (showTryAgain) {
@@ -1111,7 +1282,11 @@ if (document.getElementById('p5-canvas-container')) {
         );
 
         p.textSize(20);
-        p.text("Press ENTER to help someone else start pushing.", p.width / 2, 220);
+        p.text(
+          isTouchDevice ? "Tap to help someone else start pushing." : "Press ENTER to help someone else start pushing.",
+          p.width / 2,
+          220
+        );
         p.noStroke();
         p.textAlign(p.LEFT);
       }
@@ -1247,6 +1422,42 @@ if (document.getElementById('p5-canvas-container')) {
       if (p.keyCode == p.RIGHT_ARROW) {
         pushing = false;
       }
+    };
+
+    // Touch controls (phones/tablets have no arrow keys, space, or
+    // enter). A single tap-and-hold does everything the keyboard does,
+    // depending on the game's current state: restarts after a win,
+    // otherwise grabs any pending "add a helper" opportunity and starts
+    // pushing for as long as the touch is held.
+    p.touchStarted = function() {
+      if (won) {
+        people = 1;
+        rockX = startX;
+        rockY = startY;
+        won = false;
+        canAddPerson = false;
+        pushing = false;
+        resets = 0;
+        showTryAgain = false;
+        fallingRockActive = false;
+        return false; // prevent the default touch scroll/zoom behavior
+      }
+
+      if (canAddPerson && !fallingRockActive && people < 5) {
+        people++;
+        canAddPerson = false;
+      }
+
+      if (!fallingRockActive) {
+        pushing = true;
+      }
+
+      return false;
+    };
+
+    p.touchEnded = function() {
+      pushing = false;
+      return false;
     };
   });
 }

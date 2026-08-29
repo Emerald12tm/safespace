@@ -79,6 +79,9 @@
 
       <!-- 1. Box Breathing Exercise — logic in script.js section 6 -->
       <section class="activity-card" id="breathing-section">
+        <!-- Only visible when script.js adds .recommended to this card
+             (see script.js section 5). -->
+        <span class="recommended-badge">Recommended for you</span>
         <h2>Box Breathing</h2>
         <p class="activity-desc">Follow the rhythm: 4s inhale, 4s hold, 4s exhale, 4s hold.</p>
 
@@ -91,11 +94,31 @@
         </div>
       </section>
 
-      <!-- 2. Spotify Calming Music — #spotifySkeleton is a pulsing
+      <!-- 2. Mindful Movement — a short pool of gentle stretch/movement
+           prompts with a countdown, similar in spirit to the breathing
+           timer. Logic in script.js section 7. -->
+      <section class="activity-card" id="movement-section">
+        <span class="recommended-badge">Recommended for you</span>
+        <h2>Mindful Movement</h2>
+        <p class="activity-desc">Give your body a short reset. Press start for a gentle movement prompt.</p>
+
+        <div class="movement-widget">
+          <!-- Filled in with a small illustration of the current pose
+               by script.js section 7 (empty/hidden until Start is
+               pressed). -->
+          <div id="movementIcon" class="movement-icon" aria-hidden="true"></div>
+          <p id="movementText" class="movement-prompt">Press start for a short movement break</p>
+          <p id="movementTimer" class="breath-text">Ready when you are</p>
+          <button id="startMovementBtn" class="primary-btn">Start Movement</button>
+        </div>
+      </section>
+
+      <!-- 3. Spotify Calming Music — #spotifySkeleton is a pulsing
            placeholder shown until the iframe below actually finishes
            loading (script.js section 1d), so this card isn't just an
            empty gap while it fetches. -->
       <section class="activity-card" id="music-section">
+        <span class="recommended-badge">Recommended for you</span>
         <h2>Calming Sounds</h2>
         <p class="activity-desc">Listen to curated ambient soundscapes to ease your mind.</p>
         <div class="spotify-container">
@@ -105,7 +128,7 @@
       </section>
 
 
-      <!-- 3. Affirmation Generator — random pool + click handler in
+      <!-- 4. Affirmation Generator — random pool + click handler in
            script.js section 8 -->
       <section class="activity-card" id="affirmation-section">
         <h2>Positive Affirmation</h2>
@@ -115,7 +138,7 @@
         <button id="nextAffirmationBtn" class="primary-btn">New Affirmation</button>
       </section>
 
-      <!-- 4. Reflective Journal (private, saved to your Supabase
+      <!-- 5. Reflective Journal (private, saved to your Supabase
            account — see script.js section 10). Only one of the two
            blocks below is visible at a time: script.js's
            updateAccountUI() toggles the `hidden` attribute on whichever
@@ -123,6 +146,7 @@
            based on whether you're logged in. Logged out, you get a
            prompt to log in instead of the form. -->
       <section class="activity-card" id="demo-supabase-section">
+        <span class="recommended-badge">Recommended for you</span>
         <h2>Reflective Journal</h2>
         <p class="activity-desc">Write down how you feel in the moment, then save it as a new entry. Only you can see what you save here.</p>
 
@@ -163,9 +187,10 @@
         </form>
       </section>
 
-      <!-- 5. p5.js Interactive Game — script.js section 9 mounts the
+      <!-- 6. p5.js Interactive Game — script.js section 9 mounts the
            game's canvas inside #p5-canvas-container. #gameSkeleton is a
-           placeholder shown until that canvas actually exists. -->
+           placeholder shown until that canvas actually exists. Works
+           with touch (tap-and-hold) as well as the keyboard. -->
       <section class="activity-card game-card" id="game-section">
         <h2>Interactive Space</h2>
         <p class="activity-desc">A gentle game to help focus and ground your attention.</p>
