@@ -1,0 +1,14 @@
+{
+  "name": "SafeSpace",
+  "short_name": "SafeSpace",
+  "description": "A calm check-in space to pause, breathe, journal, and reset.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#10162b",
+  "theme_color": "#10162b",
+  "icons": [
+    { "src": "images/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "images/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "images/favicon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

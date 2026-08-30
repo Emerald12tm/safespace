@@ -198,7 +198,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // style.css) and reveals its "Recommended for you" badge.
   const moodGreeting = document.getElementById('moodGreeting');
   const moodSubtext = document.getElementById('moodSubtext');
+  const crisisNote = document.getElementById('crisisNote');
   const currentMood = localStorage.getItem('safespace_selected_mood');
+
+  // Shown only for the two heavier check-in states — a quiet, always-
+  // available option, not a popup or anything alarming.
+  if (crisisNote) {
+    crisisNote.hidden = !(currentMood === 'heavy' || currentMood === 'overloaded');
+  }
 
   if (moodGreeting) {
     if (currentMood) {
@@ -600,17 +607,21 @@ document.addEventListener('DOMContentLoaded', function() {
   const journalHistoryList = document.getElementById('journalHistoryList');
   const journalHistoryStatus = document.getElementById('journalHistoryStatus');
   const journalHistoryEmpty = document.getElementById('journalHistoryEmpty');
+  const moodBreakdown = document.getElementById('moodBreakdown');
   const returnActivitiesBtn = document.getElementById('returnActivitiesBtn');
   const viewJournalHistoryBtn = document.getElementById('viewJournalHistoryBtn');
 
   // Maps a saved mood value to the small icon shown next to each
-  // journal history entry.
+  // journal history entry, and reused as the identity marker in the
+  // mood breakdown below — same icon, same meaning, everywhere on the
+  // site, so the breakdown needs no separate color legend of its own.
   const moodStickerMap = {
     bright: { src: 'images/bright.png', alt: 'Bright' },
     steady: { src: 'images/steady.png', alt: 'Steady' },
     heavy: { src: 'images/heavy.png', alt: 'Heavy' },
     overloaded: { src: 'images/overloaded.png', alt: 'Overloaded' }
   };
+  const moodOrder = ['bright', 'steady', 'heavy', 'overloaded'];
 
   if (returnActivitiesBtn) {
     returnActivitiesBtn.addEventListener('click', function() {
@@ -668,10 +679,12 @@ document.addEventListener('DOMContentLoaded', function() {
           journalHistoryEmpty.textContent = 'No journal entries yet. Save one from the Activities page to see it here.';
           journalHistoryEmpty.style.display = 'block';
         }
+        if (moodBreakdown) moodBreakdown.hidden = true;
         return;
       }
 
       if (journalHistoryStatus) journalHistoryStatus.textContent = `Loaded ${data.length} journal entr${data.length === 1 ? 'y' : 'ies'}.`;
+      renderMoodBreakdown(data);
       renderJournalEntries(data);
     } catch (error) {
       console.error('Failed to load journal history:', error);
@@ -680,7 +693,63 @@ document.addEventListener('DOMContentLoaded', function() {
         journalHistoryEmpty.textContent = `There was a problem loading your journal entries: ${error.message || error}`;
         journalHistoryEmpty.style.display = 'block';
       }
+      if (moodBreakdown) moodBreakdown.hidden = true;
     }
+  }
+
+  // A small "N entries per mood" summary, rendered as horizontal bars.
+  // Identity is carried entirely by the same mood icons used everywhere
+  // else on the site (not by bar color), so there's no separate legend
+  // to build or color-contrast risk to manage — every bar is just the
+  // site's one accent color, varying only in length.
+  function renderMoodBreakdown(entries) {
+    if (!moodBreakdown) return;
+
+    const counts = { bright: 0, steady: 0, heavy: 0, overloaded: 0 };
+    entries.forEach(entry => {
+      const moodValue = String(getJournalValue(entry, ['mood', 'feeling', 'emotion', 'status']) || '').toLowerCase();
+      if (counts[moodValue] !== undefined) counts[moodValue]++;
+    });
+
+    const total = entries.length;
+    moodBreakdown.innerHTML = '';
+
+    moodOrder.forEach(moodKey => {
+      const count = counts[moodKey];
+      const moodDef = moodStickerMap[moodKey];
+      const percent = total > 0 ? Math.round((count / total) * 100) : 0;
+
+      const row = document.createElement('div');
+      row.className = 'mood-breakdown-row';
+
+      const icon = document.createElement('img');
+      icon.src = moodDef.src;
+      icon.alt = '';
+      icon.className = 'mood-breakdown-icon';
+
+      const label = document.createElement('span');
+      label.className = 'mood-breakdown-label';
+      label.textContent = moodDef.alt;
+
+      const track = document.createElement('div');
+      track.className = 'mood-breakdown-track';
+      const fill = document.createElement('div');
+      fill.className = 'mood-breakdown-fill';
+      fill.style.width = percent + '%';
+      track.appendChild(fill);
+
+      const countEl = document.createElement('span');
+      countEl.className = 'mood-breakdown-count';
+      countEl.textContent = String(count);
+
+      row.appendChild(icon);
+      row.appendChild(label);
+      row.appendChild(track);
+      row.appendChild(countEl);
+      moodBreakdown.appendChild(row);
+    });
+
+    moodBreakdown.hidden = false;
   }
 
   // Builds the actual DOM cards for each journal entry (date, mood
@@ -703,10 +772,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const createdDate = createdAtValue ? new Date(createdAtValue) : new Date();
       date.textContent = createdDate.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
 
-      const moodValue = getJournalValue(entry, ['mood', 'feeling', 'emotion', 'status']);
+      const moodValue = String(getJournalValue(entry, ['mood', 'feeling', 'emotion', 'status']) || '').toLowerCase();
       const mood = document.createElement('div');
       mood.className = 'mood-sticker';
-      const moodDef = moodStickerMap[String(moodValue || '').toLowerCase()];
+      const moodDef = moodStickerMap[moodValue];
       if (moodDef) {
         const sticker = document.createElement('img');
         sticker.src = moodDef.src;
@@ -720,7 +789,11 @@ document.addEventListener('DOMContentLoaded', function() {
       header.appendChild(date);
       header.appendChild(mood);
 
+      // --- View mode: title + content, as before ---
       const titleValue = getJournalValue(entry, ['title', 'heading', 'summary', 'entry_title']);
+      const view = document.createElement('div');
+      view.className = 'journal-view';
+
       const title = document.createElement('h2');
       title.className = 'journal-history-title';
       title.textContent = titleValue || 'Untitled entry';
@@ -730,9 +803,147 @@ document.addEventListener('DOMContentLoaded', function() {
       content.className = 'journal-history-content';
       content.textContent = contentValue || '';
 
+      view.appendChild(title);
+      view.appendChild(content);
+
+      // --- Edit mode: a small inline form, hidden until "Edit" is clicked ---
+      const editForm = document.createElement('form');
+      editForm.className = 'journal-edit-form';
+      editForm.hidden = true;
+
+      const titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.required = true;
+      titleInput.value = titleValue || '';
+
+      const moodSelect = document.createElement('select');
+      moodSelect.required = true;
+      moodOrder.forEach(m => {
+        const option = document.createElement('option');
+        option.value = m;
+        option.textContent = moodStickerMap[m].alt;
+        if (m === moodValue) option.selected = true;
+        moodSelect.appendChild(option);
+      });
+
+      const contentTextarea = document.createElement('textarea');
+      contentTextarea.rows = 4;
+      contentTextarea.required = true;
+      contentTextarea.value = contentValue || '';
+
+      const editStatus = document.createElement('p');
+      editStatus.className = 'demo-status';
+
+      const saveBtn = document.createElement('button');
+      saveBtn.type = 'submit';
+      saveBtn.className = 'primary-btn';
+      saveBtn.textContent = 'Save';
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.className = 'skip-btn';
+      cancelBtn.textContent = 'Cancel';
+
+      editForm.appendChild(titleInput);
+      const editButtonRow = document.createElement('div');
+      editButtonRow.className = 'journal-edit-actions';
+      editButtonRow.appendChild(saveBtn);
+      editButtonRow.appendChild(cancelBtn);
+
+      editForm.appendChild(moodSelect);
+      editForm.appendChild(contentTextarea);
+      editForm.appendChild(editButtonRow);
+      editForm.appendChild(editStatus);
+
+      // --- Actions row: Edit / Delete, shown in view mode only ---
+      const actions = document.createElement('div');
+      actions.className = 'journal-history-actions';
+
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'skip-btn';
+      editBtn.textContent = 'Edit';
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'skip-btn';
+      deleteBtn.textContent = 'Delete';
+
+      actions.appendChild(editBtn);
+      actions.appendChild(deleteBtn);
+
+      editBtn.addEventListener('click', function() {
+        view.hidden = true;
+        actions.hidden = true;
+        editForm.hidden = false;
+        titleInput.focus();
+      });
+
+      cancelBtn.addEventListener('click', function() {
+        editForm.hidden = true;
+        view.hidden = false;
+        actions.hidden = false;
+        setStatus(editStatus, '', null);
+      });
+
+      editForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        if (!demoSupabase) {
+          setStatus(editStatus, 'Supabase is not available right now.', 'error');
+          return;
+        }
+
+        const updatedTitle = titleInput.value.trim();
+        const updatedContent = contentTextarea.value.trim();
+        if (!updatedTitle || !updatedContent) {
+          setStatus(editStatus, 'Please fill in all fields.', 'error');
+          return;
+        }
+
+        setStatus(editStatus, 'Saving...', null);
+        saveBtn.disabled = true;
+
+        try {
+          // RLS's update policy re-checks auth.uid() = user_id on every
+          // row this touches, so this can only ever affect the row
+          // shown here (which the earlier SELECT already proved we own)
+          // — no need to also filter by user_id client-side.
+          const { error } = await demoSupabase
+            .from(demoTableName)
+            .update({ title: updatedTitle, mood: moodSelect.value, content: updatedContent })
+            .eq('id', entry.id);
+          if (error) throw error;
+          loadJournalHistory(); // re-fetch so the view mode reflects the edit
+        } catch (error) {
+          console.error('Journal update failed:', error);
+          setStatus(editStatus, `Save failed: ${error.message || error}`, 'error');
+          saveBtn.disabled = false;
+        }
+      });
+
+      deleteBtn.addEventListener('click', async function() {
+        if (!demoSupabase) return;
+        if (!window.confirm('Delete this journal entry? This cannot be undone.')) return;
+
+        deleteBtn.disabled = true;
+        editBtn.disabled = true;
+
+        try {
+          const { error } = await demoSupabase.from(demoTableName).delete().eq('id', entry.id);
+          if (error) throw error;
+          loadJournalHistory(); // re-fetch so the deleted entry (and its mood-breakdown count) disappear
+        } catch (error) {
+          console.error('Journal delete failed:', error);
+          setStatus(editStatus, `Delete failed: ${error.message || error}`, 'error');
+          deleteBtn.disabled = false;
+          editBtn.disabled = false;
+        }
+      });
+
       item.appendChild(header);
-      item.appendChild(title);
-      item.appendChild(content);
+      item.appendChild(view);
+      item.appendChild(editForm);
+      item.appendChild(actions);
       journalHistoryList.appendChild(item);
     });
   }
@@ -867,6 +1078,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (journalHistoryList) journalHistoryList.innerHTML = '';
       if (journalHistoryStatus) journalHistoryStatus.textContent = '';
       if (journalHistoryEmpty) journalHistoryEmpty.style.display = 'none';
+      if (moodBreakdown) moodBreakdown.hidden = true;
     }
   }
 
