@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
       text: 'If you can, stand and gently fold forward, letting your head hang.',
       seconds: 15,
       icon: svgOpen +
-        '<g transform="rotate(75 50 64)"><circle cx="50" cy="20" r="9"/>' +
+        '<g transform="rotate(55 50 64)"><circle cx="50" cy="20" r="9"/>' +
         '<line x1="50" y1="29" x2="50" y2="64"/><line x1="50" y1="34" x2="38" y2="56"/>' +
         '<line x1="50" y1="34" x2="62" y2="56"/></g>' +
         '<line x1="50" y1="64" x2="40" y2="98"/><line x1="50" y1="64" x2="60" y2="98"/></svg>'
@@ -1187,10 +1187,15 @@ if (document.getElementById('p5-canvas-container')) {
     // instead of "press SPACE" / "press ENTER".
     const isTouchDevice = window.matchMedia('(hover: none)').matches;
 
+    // The raw <canvas> DOM element, set in setup() below. touchStarted/
+    // touchEnded compare against this — see the comment there for why.
+    let gameCanvasEl = null;
+
     p.setup = function() {
       const container = document.getElementById('p5-canvas-container');
       const canvas = p.createCanvas(1000, 1000);
       canvas.parent(container);
+      gameCanvasEl = canvas.elt;
       p.frameRate(120);
 
       // The skeleton placeholder (style.css: .skeleton-game) is only
@@ -1474,7 +1479,7 @@ if (document.getElementById('p5-canvas-container')) {
       p.text(isTouchDevice ? "Tap and hold to push" : "Hold RIGHT ARROW to push", 30, 70);
 
       if (canAddPerson && people < 5) {
-        p.text(isTouchDevice ? "Tap to add a helper" : "Press SPACE to add a helper", 30, 100);
+        p.text(isTouchDevice ? "Tap to add a helper" : "Press RIGHT ARROW to add a helper", 30, 100);
       }
 
       if (showTryAgain) {
@@ -1615,13 +1620,39 @@ if (document.getElementById('p5-canvas-container')) {
       }
     }
 
+    // p5 binds keyPressed/keyReleased to the whole document, not just
+    // the canvas — they fire for every keystroke on the page regardless
+    // of what actually has focus. Without this guard, typing a space
+    // into the journal Title/Content fields (or pressing Enter in them)
+    // elsewhere on this same page would get silently swallowed by the
+    // game, since the code below used to unconditionally preventDefault
+    // on those keys. Skip entirely whenever a normal form field is what
+    // the user is actually typing into.
+    function isTypingIntoAField() {
+      const active = document.activeElement;
+      if (!active) return false;
+      return active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' ||
+        active.tagName === 'SELECT' || active.isContentEditable;
+    }
+
     // Right arrow = push. Space = recruit a helper (only right after a
     // slip, while canAddPerson is true). Enter = restart after winning.
     p.keyPressed = function() {
+      if (isTypingIntoAField()) return; // let the browser handle it normally
+
       if (p.keyCode == p.RIGHT_ARROW && !fallingRockActive) {
+        // Recruit the waiting helper automatically instead of making the
+        // player press Space first — one key, right after a slip, gets
+        // you back to pushing with the extra person already there.
+        if (canAddPerson && people < 5) {
+          people++;
+          canAddPerson = false;
+        }
         pushing = true;
       }
 
+      // Space still works too, in case that's the habit — just no
+      // longer required.
       if (p.key == " " && canAddPerson && !fallingRockActive && people < 5) {
         people++;
         canAddPerson = false;
@@ -1649,6 +1680,7 @@ if (document.getElementById('p5-canvas-container')) {
     };
 
     p.keyReleased = function() {
+      if (isTypingIntoAField()) return;
       if (p.keyCode == p.RIGHT_ARROW) {
         pushing = false;
       }
@@ -1659,7 +1691,33 @@ if (document.getElementById('p5-canvas-container')) {
     // depending on the game's current state: restarts after a win,
     // otherwise grabs any pending "add a helper" opportunity and starts
     // pushing for as long as the touch is held.
-    p.touchStarted = function() {
+    // p5 doesn't scope touchStarted/touchEnded to the canvas — it binds
+    // them to `window` and fires for every touch (and, via an internal
+    // Safari-compatibility shim, sometimes even mouse clicks) anywhere
+    // on the page. Without checking the actual target here, tapping or
+    // clicking into the journal Title/Mood/Content fields elsewhere on
+    // this same page would get treated as game input AND have its
+    // default action (focusing the field) suppressed by the `return
+    // false` below — which is exactly what "return false" is for
+    // (blocking the canvas's own default touch-scroll behavior), just
+    // misapplied to unrelated elements. Ignore anything that didn't
+    // actually happen on the canvas.
+    p.touchStarted = function(e) {
+      if (e && e.target !== gameCanvasEl) return;
+
+      // A genuine canvas interaction. Since this handler's own `return
+      // false` below calls preventDefault() on the canvas's mousedown/
+      // touchstart, the browser's default blur-then-focus sequence gets
+      // suppressed too — so if a form field elsewhere on the page (e.g.
+      // the mood dropdown) was focused, it would otherwise stay
+      // "focused" as far as document.activeElement is concerned even
+      // after clicking here, incorrectly blocking the game's own
+      // keyboard controls (see isTypingIntoAField() above). Blur it
+      // ourselves to compensate.
+      if (document.activeElement && document.activeElement !== document.body) {
+        document.activeElement.blur();
+      }
+
       if (won) {
         people = 1;
         rockX = startX;
@@ -1685,7 +1743,8 @@ if (document.getElementById('p5-canvas-container')) {
       return false;
     };
 
-    p.touchEnded = function() {
+    p.touchEnded = function(e) {
+      if (e && e.target !== gameCanvasEl) return;
       pushing = false;
       return false;
     };
