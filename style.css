@@ -374,17 +374,6 @@ a.primary-btn {
   opacity: 0.7;
 }
 
-.footer-crisis {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  text-align: center;
-  max-width: 480px;
-}
-
-.footer-crisis strong {
-  color: var(--text-main);
-}
-
 /* ==========================================================
    Check-In Page Styles
    ========================================================== */
@@ -489,22 +478,6 @@ a.primary-btn {
 .activity-header {
   margin-bottom: 32px;
   text-align: center;
-}
-
-.crisis-note {
-  margin-top: 16px;
-  padding: 12px 20px;
-  background-color: var(--surface-color);
-  border-radius: 14px;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.crisis-note strong {
-  color: var(--text-main);
 }
 
 .activities-grid {
@@ -910,105 +883,6 @@ a.primary-btn {
   white-space: pre-wrap;
 }
 
-.journal-history-actions {
-  display: flex;
-  gap: 16px;
-  margin-top: 12px;
-}
-
-.journal-history-actions .skip-btn {
-  margin-top: 0;
-}
-
-/* Edit form, swapped in for .journal-view when "Edit" is clicked. */
-.journal-edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.journal-edit-form input,
-.journal-edit-form select,
-.journal-edit-form textarea {
-  background-color: var(--bg-color);
-  color: var(--text-main);
-  border: 1px solid var(--accent-color);
-  border-radius: 12px;
-  padding: 10px 12px;
-  font: inherit;
-  width: 100%;
-}
-
-.journal-edit-form textarea {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.journal-edit-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.journal-edit-actions .skip-btn {
-  margin-top: 0;
-}
-
-/* Mood breakdown (journal-history.html) — a small "count per mood"
-   summary. Identity is carried entirely by the mood icon (the same
-   ones used on the check-in page and next to each entry above), never
-   by bar color, so every bar is just the site's accent color at a
-   different length — no separate categorical palette needed. */
-.mood-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 24px;
-  padding: 20px;
-  background-color: var(--bg-color);
-  border-radius: 20px;
-}
-
-.mood-breakdown-row {
-  display: grid;
-  grid-template-columns: 22px 70px 1fr 20px;
-  align-items: center;
-  gap: 12px;
-}
-
-.mood-breakdown-icon {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-}
-
-.mood-breakdown-label {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  text-align: left;
-}
-
-.mood-breakdown-track {
-  height: 10px;
-  background-color: var(--surface-color);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.mood-breakdown-fill {
-  height: 100%;
-  min-width: 4px;
-  background-color: var(--accent-color);
-  border-radius: 6px;
-  transition: width 0.3s ease;
-}
-
-.mood-breakdown-count {
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-align: right;
-}
-
 #returnActivitiesBtn {
   margin-top: 24px;
   width: 100%;
@@ -1059,42 +933,6 @@ a.primary-btn {
 
 .error-container {
   max-width: 480px;
-}
-
-/* ==========================================================
-   Privacy Policy Page
-   ========================================================== */
-
-.policy-page {
-  max-width: 680px;
-  gap: 4px;
-}
-
-.policy-section {
-  width: 100%;
-  text-align: left;
-  margin-top: 28px;
-}
-
-.policy-section h2 {
-  font-size: 1.15rem;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.policy-section p {
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-}
-
-.policy-section a {
-  color: var(--accent-color);
-}
-
-.policy-page > .primary-btn {
-  margin-top: 32px;
 }
 
 .error-code {

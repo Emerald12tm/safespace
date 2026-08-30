@@ -21,8 +21,6 @@
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16.png">
   <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
-  <link rel="manifest" href="site.webmanifest">
-  <meta name="theme-color" content="#10162b">
   <link rel="stylesheet" href="style.css">
   <!-- p5.js Library for the grounding game (deferred so it never blocks first paint) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js" defer></script>
@@ -74,11 +72,6 @@
     <header class="activity-header">
       <h1 class="hero-title" id="moodGreeting">Space Tailored for You</h1>
       <p class="hero-description" id="moodSubtext">Explore tools designed to meet you right where you are.</p>
-      <!-- Shown only for "heavy" / "overloaded" check-ins (script.js
-           section 5) — hidden the rest of the time. -->
-      <p id="crisisNote" class="crisis-note" hidden>
-        If things feel like more than a passing rough patch, you can also call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline) — free, confidential, 24/7.
-      </p>
     </header>
 
     <!-- Activity Sections -->
@@ -211,13 +204,11 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <p class="footer-crisis">If you are in crisis, call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline) &mdash; free, confidential, 24/7.</p>
     <nav class="footer-links">
       <a href="index.html">Home</a>
       <a href="check-in.html">Check-in</a>
       <a href="activities.html">Activities</a>
       <a href="account.html">Account</a>
-      <a href="privacy.html">Privacy</a>
     </nav>
     <p class="footer-copy">&copy; <span id="footerYear">2026</span> SAFESPACE</p>
     <p class="footer-credit">Made by Shaurya Gupta</p>
